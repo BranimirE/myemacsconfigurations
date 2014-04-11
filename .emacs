@@ -33,12 +33,14 @@
 ;; (yas-global-mode 1)
 
 ;; Para cargar el modo auto-complete mode
-(add-to-list 'load-path "~/.emacs.d/")
+;; (add-to-list 'load-path "~/.emacs.d/")
 (require 'auto-complete-config)
 (add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict/")
 (ac-config-default)
+
 ;; Mostrar sugerencia de autocompeltacion despues de ingresar un caracter
 (setq ac-auto-start 1)
+
 ;; Mostrar sugerencias de autocompletacion despues de 0.1 seg.
 (setq ac-auto-show-menu 0.1)
 
@@ -47,3 +49,30 @@
 
 ;; Poner el fondo en un bonito color #121212
 (set-background-color "#121212")
+
+;; Flymake (sin necesidad de crear makefiles)
+(require 'flymake)
+
+(defun flymake-cc-init ()
+  (let* ((temp-file   (flymake-init-create-temp-buffer-copy
+                       'flymake-create-temp-inplace))
+         (local-file  (file-relative-name
+                       temp-file
+                       (file-name-directory buffer-file-name))))
+    (list "g++" (list "-fsyntax-only" local-file))))
+
+(push '("\\.cpp$" flymake-cc-init) flymake-allowed-file-name-masks)
+
+(add-hook 'c++-mode-hook
+          '(lambda ()
+             (flymake-mode t)))
+(put 'upcase-region 'disabled nil)
+
+(menu-bar-mode 0)
+(tool-bar-mode 0)
+
+(defun run-current-file ()
+  "Runs the compilation of the current file.
+Assumes it has the same name, but without an extension"
+  (interactive)
+  (compile (file-name-sans-extension buffer-file-name)))
